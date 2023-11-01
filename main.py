@@ -10,6 +10,7 @@ app = FastAPI()
 
 @app.get("/")
 def root():
+    # Complejidad: O(1)
     return {
         "Servicio": "Estructuras de datos"
     }
@@ -27,6 +28,7 @@ def indices_invertidos(palabra: dict):
                     cache[word].append(documento)
                 else:
                     cache[word] = [documento]
+    # Complejidad: O(n * m), donde n es el número de documentos en `mock.my_documento` y m es el número promedio de palabras en cada documento.
     return cache.get(palabra["palabra"], "No se encontró")
 
 
@@ -57,6 +59,7 @@ def algoritmo_floyd(nums: dict):
     nodo3_no_ciclo.siguiente = nodo4_no_ciclo
     nodo4_no_ciclo.siguiente = nodo5_no_ciclo
 
+    # Complejidad: O(1)
     return {
         "resultado": buscar_numero_repetido(nums["numeros"])
     }
@@ -74,6 +77,7 @@ def buscar_ciclo(lista):
             print("Ciclo detectado:", liebre, tortuga)
             return True
 
+    # Complejidad: O(n), donde n es el número de elementos en la lista.
     return False
 
 
@@ -96,11 +100,12 @@ def buscar_numero_repetido(nums):
 
     if not resultado:
         print(json.dumps({"mensaje": "No se encontró ningún número repetido en la lista."}, ensure_ascii=False))
+
+        # Complejidad: O(n), donde n es el número de elementos en la lista de números.
     return {}
 
 
 @app.post("/merge-sort")
-
 def generar_documentos():
     # Generar una lista de 500 documentos ordenados alfabéticamente
     documentos = []
@@ -108,6 +113,8 @@ def generar_documentos():
         documento = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=10))
         documentos.append(documento)
     documentos.sort()
+
+    # Complejidad: O(1)
     return documentos
 
 
@@ -141,7 +148,10 @@ def merge_sort(arr):
             arr[k] = right_half[j]
             j += 1
             k += 1
+    # Complejidad: O(n * log(n)), donde n es el número de documentos generados.
     return arr
+
+
 # Ordenar la lista de documentos utilizando Merge Sort
 respuesta = merge_sort(generar_documentos())
 print(respuesta)
