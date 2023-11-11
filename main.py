@@ -42,14 +42,48 @@ def indices_invertidos(palabra: dict):
     return cache.get(palabra["palabra"], "No se encontró")
 @app.post("/sqs")
 def publicar (message: dict):
+    print(".......")
     response = sqs.send_message(
         QueueUrl=queue_url,
-        MessageBody=message['Braian Felipe Ramírez']
+        MessageBody=message['message']
     )
     print(f'Mensaje publicado con éxito: {response["MessageId"]}')
     return {
-        "id" : response["MessageId"]
+        "id": response["MessageId"]
     }
+
+@app.get("/sqs-eliminar-cola")
+def delete_messages_batch():
+
+  max_messages = 10
+
+  while True:
+
+    response = sqs.receive_message(
+      QueueUrl=queue_url,
+      MaxNumberOfMessages=max_messages,
+      WaitTimeSeconds=0
+    )
+    print(response)
+
+    if not response['Messages']:
+      break
+
+    receipt_handles = [
+      m['ReceiptHandle'] for m in response['Messages']
+    ]
+
+    sqs.delete_message_batch(
+      QueueUrl=queue_url,
+      Entries=[
+        {'Id': str(i), 'ReceiptHandle': rh}
+        for i, rh in receipt_handles
+      ]
+    )
+  print("Mensajes borrados!")
+  return{
+      "id": "Mensajes borrados!"
+  }
 @app.get("/sqs")
 def procesar ():
     response = sqs.receive_message(
@@ -84,6 +118,7 @@ def procesar ():
         return {
             "respuesta":"No se encontraron mensajes en la cola."
         }
+
 @app.post("/algoritmo-floyd")
 def algoritmo_floyd(nums: dict):
     nodo1 = Nodo(1)
