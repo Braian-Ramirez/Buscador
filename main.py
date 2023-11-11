@@ -3,10 +3,20 @@ import mock
 import json
 import random
 import string
+import boto3
 from nodo import Nodo
 
 app = FastAPI()
+aws_access_key_id = 'AKIAXII2BKO7PPH2CJMQ'
+aws_secret_access_key = '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'
 
+sqs = boto3.client(
+    'sqs',
+    region_name='us-east-1',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
+queue_url = 'https://sqs.us-east-1.amazonaws.com/498807690174/transacciones_banco'
 
 @app.get("/")
 def root():
@@ -30,8 +40,50 @@ def indices_invertidos(palabra: dict):
                     cache[word] = [documento]
     # Complejidad: O(n * m), donde n es el número de documentos en `mock.my_documento` y m es el número promedio de palabras en cada documento.
     return cache.get(palabra["palabra"], "No se encontró")
+@app.post("/sqs")
+def publicar (message: dict):
+    response = sqs.send_message(
+        QueueUrl=queue_url,
+        MessageBody=message['Braian Felipe Ramírez']
+    )
+    print(f'Mensaje publicado con éxito: {response["MessageId"]}')
+    return {
+        "id" : response["MessageId"]
+    }
+@app.get("/sqs")
+def procesar ():
+    response = sqs.receive_message(
+        QueueUrl=queue_url,
+        AttributeNames=[
+            'All'
+        ],
+        MessageAttributeNames=[
+            'All'
+        ],
+        MaxNumberOfMessages=1,
+        VisibilityTimeout=30,
+        WaitTimeSeconds=0
+    )
 
+    print(response)
+    if response.get('Messages'):
 
+        message = response['Messages']
+
+        print(f"Mensaje recibido: {message[0]['ReceiptHandle']}")
+
+        sqs.delete_message(
+            QueueUrl=queue_url,
+            ReceiptHandle=message[0]['ReceiptHandle']
+        )
+        return {
+             "respuesta": f"mensaje procesado : {message[0]['ReceiptHandle']} "
+        }
+    else:
+        print("No se encontraron mensajes en la cola.")
+        return {
+            "respuesta":"No se encontraron mensajes en la cola."
+        }
 @app.post("/algoritmo-floyd")
 def algoritmo_floyd(nums: dict):
     nodo1 = Nodo(1)
